@@ -1,0 +1,39 @@
+rules:
+  branch_patterns:
+    - "^feature/[A-Z]+-\\d+-.*"
+    - "^fix/[A-Z]+-\\d+-.*"
+    - "^chore/.*"
+    - "^release/.*"
+  conventional_commit: true
+  required_labels: [ "test-label" ]
+
+lint:
+  command: golangci-lint
+  args: [ "run", "--out-format", "json", "--timeout", "5m" ]
+  paths: []
+  severity_overrides:
+    godot: low
+    gochecknoglobals: low
+
+llm:
+  provider: mimir
+  model: vllm/mimir
+  base_url: "https://mimir.cubbit.dev/v1" # set to your mimir base URL
+
+jira:
+  base_url: "" # set to your Jira instance URL
+  project_key: ""
+
+# Per-agent system prompt overrides (optional).
+# Point each to a markdown file to override the embedded default.
+agents:
+  rules:
+    prompt: ""
+  lint:
+    prompt: ""
+  logic:
+    prompt: ""
+  focus:
+    prompt: ""
+  analysisgap:
+    prompt: ""

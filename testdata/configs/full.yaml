@@ -1,0 +1,35 @@
+rules:
+  branch_patterns:
+    - "^feature/[A-Z]+-\\d+-.*"
+    - "^fix/.*"
+  conventional_commit: true
+  required_labels:
+    - reviewed
+
+lint:
+  command: golangci-lint
+  args: ["run", "--out-format", "json"]
+  paths: ["./..."]
+  severity_overrides:
+    errcheck: low
+
+llm:
+  provider: mimir
+  model: mimir-1
+  base_url: https://mimir.internal/v1
+
+jira:
+  base_url: https://jira.example.com
+  project_key: PROJ
+
+agents:
+  rules:
+    prompt: prompts/rules.md
+  lint:
+    prompt: prompts/lint.md
+  logic:
+    prompt: prompts/logic.md
+  focus:
+    prompt: prompts/focus.md
+  analysisgap:
+    prompt: prompts/analysisgap.md

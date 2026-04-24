@@ -1,0 +1,24 @@
+{
+  "Issues": [
+    {
+      "FromLinter": "errcheck",
+      "Text": "Error return value of `foo()` is not checked",
+      "Severity": "",
+      "Pos": {
+        "Filename": "internal/auth/auth.go",
+        "Line": 12,
+        "Column": 3
+      }
+    },
+    {
+      "FromLinter": "govet",
+      "Text": "printf: fmt.Sprintf format %s has arg but call has too few args",
+      "Severity": "",
+      "Pos": {
+        "Filename": "internal/auth/auth.go",
+        "Line": 25,
+        "Column": 10
+      }
+    }
+  ]
+}

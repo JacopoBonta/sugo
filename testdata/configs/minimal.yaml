@@ -1,0 +1,4 @@
+llm:
+  provider: mimir
+  model: mimir-1
+  base_url: https://mimir.internal/v1

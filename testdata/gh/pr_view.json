@@ -1,0 +1,21 @@
+{
+  "number": 42,
+  "title": "Add user authentication",
+  "body": "Implements OAuth2 login flow.",
+  "baseRefName": "main",
+  "headRefName": "feature/PROJ-123-auth",
+  "additions": 120,
+  "deletions": 30,
+  "labels": [
+    {"name": "reviewed"},
+    {"name": "feature"}
+  ],
+  "commits": [
+    {"oid": "abc123", "messageHeadline": "feat(auth): add OAuth2 login"},
+    {"oid": "def456", "messageHeadline": "fix(auth): handle token expiry"}
+  ],
+  "files": [
+    {"path": "internal/auth/auth.go", "additions": 80, "deletions": 10},
+    {"path": "internal/auth/auth_test.go", "additions": 40, "deletions": 20}
+  ]
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "filePath": "/workspace/src/auth.ts",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'token' is defined but never used.",
+        "line": 8,
+        "column": 7,
+        "endLine": 8,
+        "endColumn": 12
+      }
+    ]
+  }
+]
