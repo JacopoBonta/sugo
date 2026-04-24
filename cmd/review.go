@@ -74,8 +74,8 @@ func runReview(cmd *cobra.Command, args []string) error {
 	}
 
 	agentList := []agents.Agent{
-		rules.New(llmClient, logger, promptFor(rulesAgentPrompt, cfg.Agents.Rules.Prompt)),
-		lint.New(llmClient, logger, promptFor(lintAgentPrompt, cfg.Agents.Lint.Prompt)),
+		rules.New(llmClient, logger, promptFor(rulesAgentPrompt, cfg.Agents.Rules.Prompt), cfg.Rules),
+		lint.New(llmClient, logger, promptFor(lintAgentPrompt, cfg.Agents.Lint.Prompt), cfg.Lint),
 		logic.New(llmClient, logger, promptFor(logicAgentPrompt, cfg.Agents.Logic.Prompt)),
 		focus.New(llmClient, logger, promptFor(focusAgentPrompt, cfg.Agents.Focus.Prompt)),
 		analysisgap.NewDefault(llmClient, logger, cfg, promptFor(agapAgentPrompt, cfg.Agents.AnalysisGap.Prompt)),

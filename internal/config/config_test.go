@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -54,5 +56,42 @@ func TestLoadInvalidBranchRegex(t *testing.T) {
 	_, err := Load("../../testdata/configs/invalid.yaml")
 	if err == nil {
 		t.Fatal("expected error for invalid regex")
+	}
+}
+
+func TestValidateInvalidTicketPattern(t *testing.T) {
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "sugo.yaml")
+	if err := os.WriteFile(cfgPath, []byte("rules:\n  trailing_ticket_pattern: \"[invalid\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Load(cfgPath)
+	if err == nil {
+		t.Fatal("expected error for invalid trailing_ticket_pattern regex")
+	}
+}
+
+func TestValidateMissingRulesSpecFile(t *testing.T) {
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "sugo.yaml")
+	if err := os.WriteFile(cfgPath, []byte("rules:\n  spec_files:\n    - /nonexistent/spec.md\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Load(cfgPath)
+	if err == nil {
+		t.Fatal("expected error for missing rules spec_files path")
+	}
+}
+
+func TestValidateMissingLintSpecFile(t *testing.T) {
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "sugo.yaml")
+	content := "lint:\n  spec_files:\n    - path: /nonexistent/spec.md\n      extensions: [\".go\"]\n"
+	if err := os.WriteFile(cfgPath, []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Load(cfgPath)
+	if err == nil {
+		t.Fatal("expected error for missing lint spec_files path")
 	}
 }

@@ -26,3 +26,4 @@ Rules:
 - severity: "high" for likely bugs or security issues, "medium" for code quality issues, "low" for style
 - fix: provide a specific code snippet or step to resolve the issue
 - Preserve the file and line information from the original linter output
+- If reference specifications follow this prompt (separated by ---), cite the relevant rule or section in the fix field

@@ -2,6 +2,7 @@ package rules
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/jacopobonta/sugo/internal/agents"
@@ -23,7 +24,28 @@ func TestCheckBranch(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			f := checkBranch(tc.headRef, tc.patterns)
+			f := checkBranch(tc.headRef, tc.patterns, nil)
+			if (len(f) > 0) != tc.wantFind {
+				t.Errorf("wantFind=%v, got %d findings", tc.wantFind, len(f))
+			}
+		})
+	}
+}
+
+func TestCheckBranchTicket(t *testing.T) {
+	ticketRE := regexp.MustCompile(`[a-z]+-[0-9]+$`)
+	tests := []struct {
+		name     string
+		headRef  string
+		wantFind bool
+	}{
+		{"has ticket", "feat/add-login-com-123", false},
+		{"missing ticket", "feat/add-login", true},
+		{"release branch skipped", "release/v1.2.0", false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			f := checkBranch(tc.headRef, nil, ticketRE)
 			if (len(f) > 0) != tc.wantFind {
 				t.Errorf("wantFind=%v, got %d findings", tc.wantFind, len(f))
 			}
@@ -44,7 +66,26 @@ func TestCheckCommits(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.msg, func(t *testing.T) {
-			f := checkCommits([]gh.Commit{{Message: tc.msg}})
+			f := checkCommits([]gh.Commit{{Message: tc.msg}}, nil)
+			if (len(f) > 0) != tc.wantFind {
+				t.Errorf("msg=%q wantFind=%v got %d findings", tc.msg, tc.wantFind, len(f))
+			}
+		})
+	}
+}
+
+func TestCheckCommitsTicket(t *testing.T) {
+	ticketRE := regexp.MustCompile(`[a-z]+-[0-9]+$`)
+	tests := []struct {
+		msg      string
+		wantFind bool
+	}{
+		{"feat: add thing com-123", false},
+		{"feat: add thing", true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.msg, func(t *testing.T) {
+			f := checkCommits([]gh.Commit{{Message: tc.msg}}, ticketRE)
 			if (len(f) > 0) != tc.wantFind {
 				t.Errorf("msg=%q wantFind=%v got %d findings", tc.msg, tc.wantFind, len(f))
 			}
@@ -74,7 +115,11 @@ func TestCheckLabels(t *testing.T) {
 }
 
 func TestAgentAnalyze(t *testing.T) {
-	agent := New(nil, nil, "")
+	agent := New(nil, nil, "", config.RulesConfig{
+		BranchPatterns:     []string{`^feature/.*`},
+		ConventionalCommit: true,
+		RequiredLabels:     []string{"reviewed"},
+	})
 	input := &agents.AnalysisInput{
 		PR: &gh.PullRequest{
 			HeadRef: "bad-branch",
@@ -103,5 +148,32 @@ func TestAgentAnalyze(t *testing.T) {
 		if f.Fix == nil {
 			t.Error("Fix must not be nil for rules agent")
 		}
+	}
+}
+
+func TestAgentAnalyzeWithTicketPattern(t *testing.T) {
+	agent := New(nil, nil, "", config.RulesConfig{
+		ConventionalCommit:    true,
+		TrailingTicketPattern: `[a-z]+-[0-9]+$`,
+	})
+	input := &agents.AnalysisInput{
+		PR: &gh.PullRequest{
+			HeadRef: "feat/add-login",
+			Commits: []gh.Commit{{Message: "feat: add login"}},
+		},
+		Config: &config.Config{
+			Rules: config.RulesConfig{
+				ConventionalCommit:    true,
+				TrailingTicketPattern: `[a-z]+-[0-9]+$`,
+			},
+		},
+	}
+	findings, err := agent.Analyze(context.Background(), input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// expect 2 findings: missing ticket on branch + missing ticket on commit
+	if len(findings) != 2 {
+		t.Errorf("got %d findings, want 2 (branch ticket + commit ticket)", len(findings))
 	}
 }

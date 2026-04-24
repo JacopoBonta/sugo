@@ -1,11 +1,12 @@
 rules:
   branch_patterns:
-    - "^feature/[A-Z]+-\\d+-.*"
-    - "^fix/[A-Z]+-\\d+-.*"
-    - "^chore/.*"
-    - "^release/.*"
+    - "^(feat|fix|hotfix|chore)/[a-z0-9-]+-[a-z]+-[0-9]+$"
+    - "^release/v[0-9]+\\.[0-9]+\\.[0-9]+$"
   conventional_commit: true
-  required_labels: [ "test-label" ]
+  trailing_ticket_pattern: "[a-z]+-[0-9]+$"
+  required_labels: []
+  spec_files:
+    - specs/rules.composer.md
 
 lint:
   command: golangci-lint
@@ -14,6 +15,11 @@ lint:
   severity_overrides:
     godot: low
     gochecknoglobals: low
+  spec_files:
+    - path: specs/codestyle.go.md
+      extensions: [ ".go" ]
+    - path: specs/codestyle.ts.md
+      extensions: [ ".ts", ".tsx" ]
 
 llm:
   provider: mimir

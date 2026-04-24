@@ -25,9 +25,17 @@ type AgentsConfig struct {
 
 // RulesConfig configures the rules agent.
 type RulesConfig struct {
-	BranchPatterns     []string `yaml:"branch_patterns"`
-	ConventionalCommit bool     `yaml:"conventional_commit"`
-	RequiredLabels     []string `yaml:"required_labels"`
+	BranchPatterns        []string `yaml:"branch_patterns"`
+	ConventionalCommit    bool     `yaml:"conventional_commit"`
+	RequiredLabels        []string `yaml:"required_labels"`
+	TrailingTicketPattern string   `yaml:"trailing_ticket_pattern"`
+	SpecFiles             []string `yaml:"spec_files"`
+}
+
+// LintSpecFile pairs a spec file path with the file extensions it applies to.
+type LintSpecFile struct {
+	Path       string   `yaml:"path"`
+	Extensions []string `yaml:"extensions"`
 }
 
 // LintConfig configures the lint agent.
@@ -36,6 +44,7 @@ type LintConfig struct {
 	Args              []string          `yaml:"args"`
 	Paths             []string          `yaml:"paths"`
 	SeverityOverrides map[string]string `yaml:"severity_overrides"`
+	SpecFiles         []LintSpecFile    `yaml:"spec_files"`
 }
 
 // LLMConfig configures the LLM provider.
@@ -111,6 +120,21 @@ func validate(cfg *Config) error {
 	for _, pattern := range cfg.Rules.BranchPatterns {
 		if _, err := regexp.Compile(pattern); err != nil {
 			return fmt.Errorf("branch pattern %q: %w", pattern, err)
+		}
+	}
+	if cfg.Rules.TrailingTicketPattern != "" {
+		if _, err := regexp.Compile(cfg.Rules.TrailingTicketPattern); err != nil {
+			return fmt.Errorf("trailing_ticket_pattern %q: %w", cfg.Rules.TrailingTicketPattern, err)
+		}
+	}
+	for _, f := range cfg.Rules.SpecFiles {
+		if _, err := os.Stat(f); err != nil {
+			return fmt.Errorf("rules spec_files %q: %w", f, err)
+		}
+	}
+	for _, f := range cfg.Lint.SpecFiles {
+		if _, err := os.Stat(f.Path); err != nil {
+			return fmt.Errorf("lint spec_files %q: %w", f.Path, err)
 		}
 	}
 	return nil

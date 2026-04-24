@@ -11,7 +11,7 @@ import (
 // conventionalCommitRE matches "type(scope): description" or "type: description".
 var conventionalCommitRE = regexp.MustCompile(`^[a-z]+(\([^)]+\))?!?: .+`)
 
-func checkCommits(commits []gh.Commit) []finding.Finding {
+func checkCommits(commits []gh.Commit, ticketRE *regexp.Regexp) []finding.Finding {
 	var findings []finding.Finding
 	for _, c := range commits {
 		if !conventionalCommitRE.MatchString(c.Message) {
@@ -21,6 +21,16 @@ func checkCommits(commits []gh.Commit) []finding.Finding {
 				Severity: finding.SeverityLow,
 				Type:     finding.TypeFix,
 				Message:  fmt.Sprintf("Commit %q does not follow conventional commit format", c.Message),
+				Fix:      &fix,
+			})
+		}
+		if ticketRE != nil && !ticketRE.MatchString(c.Message) {
+			fix := fmt.Sprintf("Append the ticket ID to the commit message (pattern %q), e.g. 'feat: add thing com-123'", ticketRE.String())
+			findings = append(findings, finding.Finding{
+				Agent:    "rules",
+				Severity: finding.SeverityLow,
+				Type:     finding.TypeFix,
+				Message:  fmt.Sprintf("Commit %q is missing a trailing ticket ID", c.Message),
 				Fix:      &fix,
 			})
 		}

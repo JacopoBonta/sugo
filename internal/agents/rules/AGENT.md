@@ -27,3 +27,4 @@ Rules:
 - fix: must be concrete and actionable, not vague
 - Preserve the original violation message; only enrich the fix field
 - location.file may be empty if the violation is not file-specific (e.g. missing label)
+- If reference specifications follow this prompt (separated by ---), cite the relevant rule or section in the fix field

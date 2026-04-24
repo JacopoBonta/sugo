@@ -4,6 +4,7 @@ package promptutil
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 // Load returns the system prompt for an agent.
@@ -18,4 +19,16 @@ func Load(embedded string, overridePath string) (string, error) {
 		return "", fmt.Errorf("read prompt override %s: %w", overridePath, err)
 	}
 	return string(data), nil
+}
+
+// Compose builds a system prompt by appending non-empty extras to base,
+// each separated by a horizontal rule divider.
+func Compose(base string, extras ...string) string {
+	parts := []string{base}
+	for _, e := range extras {
+		if e != "" {
+			parts = append(parts, e)
+		}
+	}
+	return strings.Join(parts, "\n\n---\n\n")
 }
