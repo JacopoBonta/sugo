@@ -96,7 +96,7 @@ func (c *MimirClient) doWithRetry(ctx context.Context, body []byte) (*Completion
 }
 
 func (c *MimirClient) doOnce(ctx context.Context, body []byte) (*CompletionResponse, error) {
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/v1/chat/completions", bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/chat/completions", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("mimir request: %w", err)
 	}

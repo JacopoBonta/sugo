@@ -29,7 +29,7 @@ func TestMimirComplete(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	client := NewMimirClient(srv.URL, "test-key", "test-model")
+	client := NewMimirClient(srv.URL+"/v1", "test-key", "test-model")
 	resp, err := client.Complete(context.Background(), &CompletionRequest{
 		Messages: []Message{
 			{Role: "system", Content: "You are a helpful assistant."},

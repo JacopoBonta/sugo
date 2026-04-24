@@ -82,7 +82,7 @@ func (a *Agent) enrichWithLLM(ctx context.Context, findings []finding.Finding) (
 			{Role: "system", Content: a.prompt},
 			{Role: "user", Content: userMsg},
 		},
-		MaxTokens:   1024,
+		MaxTokens:   2048,
 		Temperature: 0.2,
 	})
 	if err != nil {

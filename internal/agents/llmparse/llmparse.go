@@ -30,6 +30,9 @@ type responseJSON struct {
 // The response may be wrapped in a markdown code block.
 func ParseFindings(content, agentName string, findingType finding.FindingType) ([]finding.Finding, error) {
 	content = extractJSON(content)
+	if content == "" {
+		return nil, nil
+	}
 
 	var resp responseJSON
 	if err := json.Unmarshal([]byte(content), &resp); err != nil {
@@ -63,11 +66,15 @@ func ParseFindings(content, agentName string, findingType finding.FindingType) (
 func extractJSON(s string) string {
 	s = strings.TrimSpace(s)
 	if strings.HasPrefix(s, "```") {
-		lines := strings.SplitN(s, "\n", 2)
-		if len(lines) == 2 {
-			s = lines[1]
+		if idx := strings.Index(s, "\n"); idx >= 0 {
+			s = s[idx+1:]
 		}
-		s = strings.TrimSuffix(s, "```")
+		// strip closing fence and any trailing content after it
+		if idx := strings.LastIndex(s, "\n```"); idx >= 0 {
+			s = s[:idx]
+		} else if after, ok := strings.CutSuffix(strings.TrimSpace(s), "```"); ok {
+			s = after
+		}
 		s = strings.TrimSpace(s)
 	}
 	return s
