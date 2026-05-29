@@ -97,7 +97,10 @@ func (genericParser) Parse(output []byte) ([]lintIssue, error) {
 		if m == nil {
 			continue
 		}
-		lineNum, _ := strconv.Atoi(m[2])
+		lineNum, err := strconv.Atoi(m[2])
+		if err != nil {
+			lineNum = 0
+		}
 		issues = append(issues, lintIssue{
 			File:    m[1],
 			Line:    lineNum,

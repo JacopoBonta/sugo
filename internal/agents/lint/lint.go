@@ -82,7 +82,10 @@ func lintRun(ctx context.Context, command string, args []string) ([]byte, error)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	_ = cmd.Run() // linters return non-zero when issues found; capture output regardless
+	if err := cmd.Run(); err != nil {
+		// Linters return non-zero when issues found; capture output regardless
+		_ = err.Error()
+	}
 	return out.Bytes(), nil
 }
 
@@ -129,7 +132,6 @@ func (a *Agent) Analyze(ctx context.Context, input *agents.AnalysisInput) ([]fin
 
 	return findings, nil
 }
-
 // selectSpecs returns the contents of specs whose extensions intersect with diffExts.
 func (a *Agent) selectSpecs(diffExts map[string]struct{}) []string {
 	var selected []string
@@ -147,7 +149,10 @@ func (a *Agent) selectSpecs(diffExts map[string]struct{}) []string {
 }
 
 func (a *Agent) enrichWithLLM(ctx context.Context, findings []finding.Finding, extraSpecs []string) ([]finding.Finding, error) {
-	issuesJSON, _ := json.Marshal(findings)
+	issuesJSON, err := json.Marshal(findings)
+	if err != nil {
+		return nil, fmt.Errorf("marshal findings: %w", err)
+	}
 	userMsg := fmt.Sprintf("Linter findings:\n%s", issuesJSON)
 
 	systemMsg := promptutil.Compose(a.prompt, extraSpecs...)
