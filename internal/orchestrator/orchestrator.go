@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"sync"
 	"time"
 
@@ -12,6 +13,21 @@ import (
 	"github.com/jacopobonta/sugo/internal/finding"
 	"github.com/jacopobonta/sugo/internal/gh"
 )
+
+type agentState string
+
+const (
+	statePending agentState = "pending"
+	stateRunning agentState = "running"
+	stateDone    agentState = "done"
+	stateFailed  agentState = "failed"
+	stateSkipped agentState = "skipped"
+)
+
+type agentProgress struct {
+	name  string
+	state agentState
+}
 
 // Orchestrator fetches a PR, dispatches agents in parallel, and aggregates findings.
 type Orchestrator struct {
@@ -55,6 +71,58 @@ func (o *Orchestrator) Run(ctx context.Context, owner, repo string, number int) 
 		wg       sync.WaitGroup
 	)
 
+	// Determine if we should show the CLI loader
+	useSpinner := isStderrTTY() && (o.logger == nil || !o.logger.Enabled(ctx, slog.LevelInfo))
+
+	var progressList []agentProgress
+	agentIdxMap := make(map[string]int)
+	for _, a := range o.agents {
+		name := a.Name()
+		state := statePending
+		if !a.Available(o.config) {
+			state = stateSkipped
+		}
+		agentIdxMap[name] = len(progressList)
+		progressList = append(progressList, agentProgress{
+			name:  name,
+			state: state,
+		})
+	}
+
+	var progressMu sync.Mutex
+	updateProgress := func(name string, state agentState) {
+		progressMu.Lock()
+		if idx, ok := agentIdxMap[name]; ok {
+			progressList[idx].state = state
+		}
+		progressMu.Unlock()
+	}
+
+	var doneChan chan struct{}
+	if useSpinner {
+		doneChan = make(chan struct{})
+		drawProgress(progressList, 0, true)
+		go func() {
+			ticker := time.NewTicker(80 * time.Millisecond)
+			defer ticker.Stop()
+			var spinnerIdx int
+			for {
+				select {
+				case <-ticker.C:
+					spinnerIdx++
+					progressMu.Lock()
+					drawProgress(progressList, spinnerIdx, false)
+					progressMu.Unlock()
+				case <-doneChan:
+					progressMu.Lock()
+					drawProgress(progressList, spinnerIdx, false)
+					progressMu.Unlock()
+					return
+				}
+			}
+		}()
+	}
+
 	for _, a := range o.agents {
 		if !a.Available(o.config) {
 			msg := fmt.Sprintf("agent %s skipped: not available", a.Name())
@@ -64,15 +132,28 @@ func (o *Orchestrator) Run(ctx context.Context, owner, repo string, number int) 
 		}
 
 		wg.Add(1)
+		updateProgress(a.Name(), stateRunning)
 		go func(ag agents.Agent) {
 			defer wg.Done()
 			f, err := ag.Analyze(ctx, input)
 			mu.Lock()
 			results = append(results, result{findings: f, err: err, name: ag.Name()})
 			mu.Unlock()
+
+			if err != nil {
+				updateProgress(ag.Name(), stateFailed)
+			} else {
+				updateProgress(ag.Name(), stateDone)
+			}
 		}(a)
 	}
 	wg.Wait()
+
+	if useSpinner {
+		close(doneChan)
+		time.Sleep(10 * time.Millisecond)
+		fmt.Fprintln(os.Stderr)
+	}
 
 	var allFindings []finding.Finding
 	for _, r := range results {
@@ -93,4 +174,47 @@ func (o *Orchestrator) Run(ctx context.Context, owner, repo string, number int) 
 		Warnings: warnings,
 		Duration: time.Since(start),
 	}, nil
+}
+
+func isStderrTTY() bool {
+	fi, err := os.Stderr.Stat()
+	if err != nil {
+		return false
+	}
+	return (fi.Mode() & os.ModeCharDevice) != 0
+}
+
+func drawProgress(progress []agentProgress, spinnerIdx int, firstTime bool) {
+	spinnerFrames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+	frame := spinnerFrames[spinnerIdx%len(spinnerFrames)]
+
+	if !firstTime && len(progress) > 1 {
+		fmt.Fprintf(os.Stderr, "\033[%dA", len(progress)-1)
+	}
+
+	for i, ap := range progress {
+		var icon string
+		var stateText string
+		switch ap.state {
+		case statePending:
+			icon = "○"
+			stateText = "\033[90mpending\033[0m"
+		case stateRunning:
+			icon = fmt.Sprintf("\033[34m%s\033[0m", frame)
+			stateText = "\033[36mrunning\033[0m"
+		case stateDone:
+			icon = "\033[32m✓\033[0m"
+			stateText = "\033[32mdone\033[0m"
+		case stateFailed:
+			icon = "\033[31m✗\033[0m"
+			stateText = "\033[31mfailed\033[0m"
+		case stateSkipped:
+			icon = "\033[90m-\033[0m"
+			stateText = "\033[90mskipped\033[0m"
+		}
+		if i > 0 {
+			fmt.Fprint(os.Stderr, "\n")
+		}
+		fmt.Fprintf(os.Stderr, "\r\033[K %s  %-12s (%s)", icon, ap.name, stateText)
+	}
 }

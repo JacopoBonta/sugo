@@ -10,7 +10,7 @@ rules:
 
 lint:
   command: golangci-lint
-  args: [ "run", "--out-format", "json", "--timeout", "5m" ]
+  args: [ "run", "--output.json.path", "stdout", "--show-stats=false", "--timeout", "5m" ]
   paths: []
   severity_overrides:
     godot: low

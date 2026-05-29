@@ -95,3 +95,56 @@ func TestValidateMissingLintSpecFile(t *testing.T) {
 		t.Fatal("expected error for missing lint spec_files path")
 	}
 }
+
+func TestValidateSecurityAndCoverage(t *testing.T) {
+	dir := t.TempDir()
+
+	// Invalid security regex pattern
+	cfgPath1 := filepath.Join(dir, "sugo1.yaml")
+	content1 := "security:\n  secret_patterns:\n    - \"[invalid\"\n"
+	if err := os.WriteFile(cfgPath1, []byte(content1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(cfgPath1); err == nil {
+		t.Fatal("expected error for invalid security secret_pattern regex")
+	}
+
+	// Invalid coverage regex pattern
+	cfgPath2 := filepath.Join(dir, "sugo2.yaml")
+	content2 := "coverage:\n  mappings:\n    \"[invalid\": \"_test.go\"\n"
+	if err := os.WriteFile(cfgPath2, []byte(content2), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(cfgPath2); err == nil {
+		t.Fatal("expected error for invalid coverage mapping regex key")
+	}
+
+	// Valid security and coverage config
+	cfgPath3 := filepath.Join(dir, "sugo3.yaml")
+	content3 := `
+security:
+  secret_patterns:
+    - "AWS_KEY"
+  command: "gosec"
+  args: ["-fmt=json"]
+coverage:
+  mappings:
+    '\.go$': '_test.go'
+  exclude_paths:
+    - "vendor/"
+`
+	if err := os.WriteFile(cfgPath3, []byte(content3), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(cfgPath3)
+	if err != nil {
+		t.Fatalf("unexpected error loading valid security/coverage config: %v", err)
+	}
+	if len(cfg.Security.SecretPatterns) != 1 || cfg.Security.SecretPatterns[0] != "AWS_KEY" {
+		t.Errorf("unexpected security config parsed: %+v", cfg.Security)
+	}
+	if cfg.Coverage.Mappings[`\.go$`] != "_test.go" {
+		t.Errorf("unexpected coverage config parsed: %+v", cfg.Coverage)
+	}
+}
+

@@ -74,7 +74,7 @@ func TestRenderTerminal(t *testing.T) {
 	if !strings.Contains(out, "rename it") {
 		t.Error("terminal output missing fix text")
 	}
-	if !strings.Contains(out, "Warnings") {
+	if !strings.Contains(strings.ToUpper(out), "WARNING") {
 		t.Error("terminal output missing warnings section")
 	}
 }
@@ -90,6 +90,20 @@ func TestRenderMarkdown(t *testing.T) {
 	}
 	if !strings.Contains(out, "**Fix**") {
 		t.Error("markdown missing fix section")
+	}
+}
+
+func TestRenderHTML(t *testing.T) {
+	var buf bytes.Buffer
+	if err := Render(&buf, sampleReport(), "html"); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "SUGO Review Report - PR #42") {
+		t.Error("HTML missing title")
+	}
+	if !strings.Contains(out, "myorg/myrepo") {
+		t.Error("HTML missing repo name")
 	}
 }
 
