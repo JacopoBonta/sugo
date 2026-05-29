@@ -4,8 +4,6 @@ import (
 	"testing"
 )
 
-func ptr(s string) *string { return &s }
-
 func TestDeduplicate(t *testing.T) {
 	loc := Location{File: "a.go", LineStart: 1, LineEnd: 5}
 

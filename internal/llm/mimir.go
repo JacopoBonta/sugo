@@ -60,7 +60,7 @@ func (c *MimirClient) Complete(ctx context.Context, req *CompletionRequest) (*Co
 
 	msgs := make([]openAIMessage, len(req.Messages))
 	for i, m := range req.Messages {
-		msgs[i] = openAIMessage{Role: m.Role, Content: m.Content}
+		msgs[i] = openAIMessage(m)
 	}
 
 	body, err := json.Marshal(openAIRequest{

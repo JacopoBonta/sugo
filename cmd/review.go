@@ -46,7 +46,10 @@ func runReview(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid argument %q: %w", args[0], err)
 	}
 
-	verbose, _ := cmd.Flags().GetBool("verbose")
+	verbose, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		return fmt.Errorf("get verbose flag: %w", err)
+	}
 	logger := buildLogger(verbose)
 
 	cfg, err := config.Load(cfgFile)
@@ -107,7 +110,10 @@ func parseReviewArg(arg string) (owner, repo string, number int, err error) {
 	if m == nil {
 		return "", "", 0, fmt.Errorf("expected format owner/repo#number")
 	}
-	n, _ := strconv.Atoi(m[3])
+	n, err := strconv.Atoi(m[3])
+	if err != nil {
+		return "", "", 0, fmt.Errorf("invalid PR number: %w", err)
+	}
 	return m[1], m[2], n, nil
 }
 
