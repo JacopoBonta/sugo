@@ -29,6 +29,44 @@ Respond ONLY with valid JSON in this exact structure (no markdown, no explanatio
 }
 ```
 
+## Few-Shot Example
+
+### Example Input
+
+PR diff:
+```diff
+diff --git a/cache/cache.go b/cache/cache.go
+index 1234567..89abcdf 100644
+--- a/cache/cache.go
++++ b/cache/cache.go
+@@ -10,6 +10,7 @@ type Cache struct {
+ func (c *Cache) Get(key string) string {
++	c.mu.Lock()
+ 	val := c.data[key]
+ 	return val
+ }
+```
+
+### Example Output
+
+```json
+{
+  "findings": [
+    {
+      "agent": "logic",
+      "severity": "high",
+      "location": {
+        "file": "cache/cache.go",
+        "line_start": 10,
+        "line_end": 14
+      },
+      "message": "The mutex c.mu is locked but never unlocked, which will cause a deadlock on subsequent calls to Get.",
+      "fix": null
+    }
+  ]
+}
+```
+
 Rules:
 - fix must always be null (this is an attention point, not a prescriptive fix)
 - severity: "high" for likely runtime bugs, "medium" for subtle issues, "low" for potential improvements

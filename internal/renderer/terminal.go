@@ -186,4 +186,3 @@ func countBySeverity(findings []finding.Finding, sev finding.Severity) int {
 	}
 	return n
 }
-

@@ -3,8 +3,8 @@
 package logic
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -95,7 +95,8 @@ func (a *Agent) analyzeFile(ctx context.Context, path, patch string) ([]finding.
 			{Role: "user", Content: userMsg},
 		},
 		MaxTokens:   1024,
-		Temperature: 0.2,
+		Temperature: llm.Float64(0.0),
+		JSONMode:    true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("logic LLM call for %s: %w", path, err)

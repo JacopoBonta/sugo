@@ -29,15 +29,15 @@ import (
 )
 
 var (
-	outputFormat         string
-	rulesAgentPrompt     string
-	lintAgentPrompt      string
-	logicAgentPrompt     string
-	focusAgentPrompt     string
-	agapAgentPrompt      string
-	securityAgentPrompt  string
-	coverageAgentPrompt  string
-	openHTML             bool
+	outputFormat        string
+	rulesAgentPrompt    string
+	lintAgentPrompt     string
+	logicAgentPrompt    string
+	focusAgentPrompt    string
+	agapAgentPrompt     string
+	securityAgentPrompt string
+	coverageAgentPrompt string
+	openHTML            bool
 )
 
 var reviewCmd = &cobra.Command{

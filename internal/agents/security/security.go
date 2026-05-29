@@ -1,9 +1,9 @@
 package security
 
 import (
-	_ "embed"
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -195,7 +195,8 @@ func (a *Agent) runLLMPass(ctx context.Context, input *agents.AnalysisInput) ([]
 					{Role: "user", Content: userMsg},
 				},
 				MaxTokens:   2048,
-				Temperature: 0.2,
+				Temperature: llm.Float64(0.0),
+				JSONMode:    true,
 			})
 			if err != nil {
 				mu.Lock()

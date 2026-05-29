@@ -3,9 +3,9 @@
 package lint
 
 import (
-	_ "embed"
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -132,6 +132,7 @@ func (a *Agent) Analyze(ctx context.Context, input *agents.AnalysisInput) ([]fin
 
 	return findings, nil
 }
+
 // selectSpecs returns the contents of specs whose extensions intersect with diffExts.
 func (a *Agent) selectSpecs(diffExts map[string]struct{}) []string {
 	var selected []string
@@ -163,7 +164,8 @@ func (a *Agent) enrichWithLLM(ctx context.Context, findings []finding.Finding, e
 			{Role: "user", Content: userMsg},
 		},
 		MaxTokens:   2048,
-		Temperature: 0.2,
+		Temperature: llm.Float64(0.0),
+		JSONMode:    true,
 	})
 	if err != nil {
 		return nil, err

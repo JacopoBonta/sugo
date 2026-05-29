@@ -22,6 +22,33 @@ Respond ONLY with valid JSON in this exact structure (no markdown, no explanatio
 }
 ```
 
+## Few-Shot Example
+
+### Example Input
+
+Rule Violation:
+PR must have at least one label matching 'type/*' to classify the change.
+
+### Example Output
+
+```json
+{
+  "findings": [
+    {
+      "agent": "rules",
+      "severity": "high",
+      "location": {
+        "file": "",
+        "line_start": 0,
+        "line_end": 0
+      },
+      "message": "PR must have at least one label matching 'type/*' to classify the change.",
+      "fix": "Add a label to the pull request such as 'type/feature', 'type/bug', or 'type/chore'."
+    }
+  ]
+}
+```
+
 Rules:
 - severity: "high" for blocking violations (e.g. required labels missing), "medium" for convention violations, "low" for style issues
 - fix: must be concrete and actionable, not vague

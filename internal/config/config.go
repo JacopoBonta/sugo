@@ -51,9 +51,14 @@ type LintConfig struct {
 
 // LLMConfig configures the LLM provider.
 type LLMConfig struct {
-	Provider string `yaml:"provider"`
-	Model    string `yaml:"model"`
-	BaseURL  string `yaml:"base_url"`
+	Provider    string   `yaml:"provider"`
+	Model       string   `yaml:"model"`
+	BaseURL     string   `yaml:"base_url"`
+	Temperature *float64 `yaml:"temperature,omitempty"`
+	Seed        *int     `yaml:"seed,omitempty"`
+	JSONMode    *bool    `yaml:"json_mode,omitempty"`
+	Cache       *bool    `yaml:"cache,omitempty"`
+	CacheDir    string   `yaml:"cache_dir,omitempty"`
 }
 
 // JiraConfig configures the Jira integration.
@@ -92,12 +97,14 @@ func Load(path string) (*Config, error) {
 	cfg := defaultConfig()
 
 	if path == "" {
+		applyDefaults(cfg)
 		return cfg, nil
 	}
 
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			applyDefaults(cfg)
 			return cfg, nil
 		}
 		return nil, fmt.Errorf("read config %s: %w", path, err)
@@ -131,6 +138,26 @@ func applyDefaults(cfg *Config) {
 	if cfg.LLM.Provider == "" {
 		cfg.LLM.Provider = "mimir"
 	}
+	if cfg.LLM.Cache == nil {
+		cfg.LLM.Cache = boolPtr(true)
+	}
+	if cfg.LLM.CacheDir == "" {
+		cfg.LLM.CacheDir = ".sugo/cache"
+	}
+	if cfg.LLM.Seed == nil {
+		cfg.LLM.Seed = intPtr(42)
+	}
+	if cfg.LLM.JSONMode == nil {
+		cfg.LLM.JSONMode = boolPtr(true)
+	}
+}
+
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+func intPtr(i int) *int {
+	return &i
 }
 
 func validate(cfg *Config) error {

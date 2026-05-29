@@ -1,8 +1,8 @@
 package coverage
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -22,10 +22,10 @@ import (
 var defaultPrompt string
 
 var defaultMappings = map[string]string{
-	`\.go$`:       `_test.go`,
-	`\.(js|ts)$`:  `.test.$1`,
+	`\.go$`:        `_test.go`,
+	`\.(js|ts)$`:   `.test.$1`,
 	`\.(jsx|tsx)$`: `.test.$1`,
-	`\.py$`:       `_test.py`,
+	`\.py$`:        `_test.py`,
 }
 
 type Agent struct {
@@ -187,7 +187,8 @@ func (a *Agent) runLLMPass(ctx context.Context, input *agents.AnalysisInput) ([]
 					{Role: "user", Content: userMsg},
 				},
 				MaxTokens:   2048,
-				Temperature: 0.2,
+				Temperature: llm.Float64(0.0),
+				JSONMode:    true,
 			})
 			if err != nil {
 				mu.Lock()

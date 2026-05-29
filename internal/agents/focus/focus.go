@@ -3,8 +3,8 @@
 package focus
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 
@@ -54,7 +54,8 @@ func (a *Agent) Analyze(ctx context.Context, input *agents.AnalysisInput) ([]fin
 			{Role: "user", Content: fmt.Sprintf("PR title: %s\n\n%s", input.PR.Title, input.PR.Diff)},
 		},
 		MaxTokens:   2048,
-		Temperature: 0.3,
+		Temperature: llm.Float64(0.0),
+		JSONMode:    true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("focus LLM call: %w", err)

@@ -10,8 +10,8 @@ import (
 
 // JiraIssue holds the fields relevant to analysis-gap checking.
 type JiraIssue struct {
-	Key     string
-	Summary string
+	Key         string
+	Summary     string
 	Description string
 }
 

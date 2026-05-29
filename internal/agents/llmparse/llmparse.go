@@ -62,8 +62,15 @@ func ParseFindings(content, agentName string, findingType finding.FindingType) (
 	return results, nil
 }
 
-// extractJSON strips markdown code fences if present.
+// extractJSON strips UTF-8 BOM, extracts substring between first '{' and last '}' if present, or falls back to standard extraction/trimming.
 func extractJSON(s string) string {
+	s = strings.TrimPrefix(s, "\xef\xbb\xbf")
+	first := strings.Index(s, "{")
+	last := strings.LastIndex(s, "}")
+	if first >= 0 && last >= 0 && first < last {
+		return s[first : last+1]
+	}
+
 	s = strings.TrimSpace(s)
 	if strings.HasPrefix(s, "```") {
 		if idx := strings.Index(s, "\n"); idx >= 0 {

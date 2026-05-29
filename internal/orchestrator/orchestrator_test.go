@@ -27,7 +27,7 @@ type fakeAgent struct {
 	err       error
 }
 
-func (f *fakeAgent) Name() string                   { return f.name }
+func (f *fakeAgent) Name() string                    { return f.name }
 func (f *fakeAgent) Available(_ *config.Config) bool { return f.available }
 func (f *fakeAgent) Analyze(_ context.Context, _ *agents.AnalysisInput) ([]finding.Finding, error) {
 	return f.findings, f.err

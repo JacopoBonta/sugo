@@ -25,6 +25,76 @@ Respond ONLY with valid JSON in this exact structure (no markdown, no explanatio
 }
 ```
 
+## Few-Shot Example
+
+### Example Input
+
+PR diff:
+```diff
+diff --git a/db/connection.go b/db/connection.go
+index 1234567..89abcdf 100644
+--- a/db/connection.go
++++ b/db/connection.go
+@@ -10,4 +10,12 @@ func Connect() {
++	// Added retry logic for database connection pool
++	for i := 0; i < 5; i++ {
++		if err := tryConnect(); err == nil {
++			return
++		}
++		time.Sleep(1 * time.Second)
++	}
+ }
+diff --git a/db/connection_test.go b/db/connection_test.go
+index 2345678..90abcde 100644
+--- a/db/connection_test.go
++++ b/db/connection_test.go
+@@ -5,2 +5,5 @@ func TestConnect(t *testing.T) {
++	// Added basic connection test
+ }
+```
+
+### Example Output
+
+```json
+{
+  "findings": [
+    {
+      "agent": "focus",
+      "severity": "high",
+      "location": {
+        "file": "",
+        "line_start": 0,
+        "line_end": 0
+      },
+      "message": "Overall change: Implements database connection retry logic in db/connection.go to make the application startup more resilient. It adds a 5-step loop with 1-second delay, and includes basic tests in db/connection_test.go.",
+      "fix": null
+    },
+    {
+      "agent": "focus",
+      "severity": "high",
+      "location": {
+        "file": "db/connection.go",
+        "line_start": 10,
+        "line_end": 18
+      },
+      "message": "Verify the connection retry logic. Review the hardcoded sleep duration (1s) and check if it handles context cancellation correctly.",
+      "fix": null
+    },
+    {
+      "agent": "focus",
+      "severity": "low",
+      "location": {
+        "file": "db/connection_test.go",
+        "line_start": 5,
+        "line_end": 7
+      },
+      "message": "Standard test updates. Low risk boilerplate code.",
+      "fix": null
+    }
+  ]
+}
+```
+
 Rules:
 - fix must always be null
 - Produce one finding per key area of focus (typically 2-5 findings)

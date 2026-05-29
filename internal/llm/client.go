@@ -14,7 +14,19 @@ type CompletionRequest struct {
 	Model       string
 	Messages    []Message
 	MaxTokens   int
-	Temperature float64
+	Temperature *float64
+	Seed        *int
+	JSONMode    bool
+}
+
+// Float64 returns a pointer to the given float64 value.
+func Float64(v float64) *float64 {
+	return &v
+}
+
+// Int returns a pointer to the given int value.
+func Int(v int) *int {
+	return &v
 }
 
 // CompletionResponse contains the LLM's reply.
