@@ -14,6 +14,18 @@ func TestLoadMissing(t *testing.T) {
 	if cfg.LLM.Provider != "mimir" {
 		t.Errorf("default provider = %q, want mimir", cfg.LLM.Provider)
 	}
+	if cfg.LLM.Cache == nil || *cfg.LLM.Cache != true {
+		t.Errorf("default cache = %v, want true", cfg.LLM.Cache)
+	}
+	if cfg.LLM.CacheDir != ".sugo/cache" {
+		t.Errorf("default cacheDir = %q, want .sugo/cache", cfg.LLM.CacheDir)
+	}
+	if cfg.LLM.Seed == nil || *cfg.LLM.Seed != 42 {
+		t.Errorf("default seed = %v, want 42", cfg.LLM.Seed)
+	}
+	if cfg.LLM.JSONMode == nil || *cfg.LLM.JSONMode != true {
+		t.Errorf("default jsonMode = %v, want true", cfg.LLM.JSONMode)
+	}
 }
 
 func TestLoadEmpty(t *testing.T) {
@@ -23,6 +35,18 @@ func TestLoadEmpty(t *testing.T) {
 	}
 	if cfg == nil {
 		t.Fatal("nil config")
+	}
+	if cfg.LLM.Cache == nil || *cfg.LLM.Cache != true {
+		t.Errorf("default cache = %v, want true", cfg.LLM.Cache)
+	}
+	if cfg.LLM.CacheDir != ".sugo/cache" {
+		t.Errorf("default cacheDir = %q, want .sugo/cache", cfg.LLM.CacheDir)
+	}
+	if cfg.LLM.Seed == nil || *cfg.LLM.Seed != 42 {
+		t.Errorf("default seed = %v, want 42", cfg.LLM.Seed)
+	}
+	if cfg.LLM.JSONMode == nil || *cfg.LLM.JSONMode != true {
+		t.Errorf("default jsonMode = %v, want true", cfg.LLM.JSONMode)
 	}
 }
 
@@ -147,4 +171,3 @@ coverage:
 		t.Errorf("unexpected coverage config parsed: %+v", cfg.Coverage)
 	}
 }
-

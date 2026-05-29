@@ -8,10 +8,10 @@ func TestDeduplicate(t *testing.T) {
 	loc := Location{File: "a.go", LineStart: 1, LineEnd: 5}
 
 	tests := []struct {
-		name     string
-		input    []Finding
-		wantLen  int
-		wantSev  Severity // for single-finding dedup cases
+		name    string
+		input   []Finding
+		wantLen int
+		wantSev Severity // for single-finding dedup cases
 	}{
 		{
 			name:    "empty",

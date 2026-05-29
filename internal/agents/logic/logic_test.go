@@ -56,7 +56,7 @@ func TestLogicAgentSkipsEmptyPatch(t *testing.T) {
 	counter := &callCountLLM{}
 	agent := &Agent{llm: counter, prompt: defaultPrompt}
 	input := &agents.AnalysisInput{
-		PR: &gh.PullRequest{Files: []gh.ChangedFile{{Path: "a.go", Patch: ""}}},
+		PR:     &gh.PullRequest{Files: []gh.ChangedFile{{Path: "a.go", Patch: ""}}},
 		Config: &config.Config{},
 	}
 	_, err := agent.Analyze(context.Background(), input)

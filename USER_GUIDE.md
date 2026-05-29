@@ -23,17 +23,23 @@ This guide details the purpose, inner workings, and configuration/customization 
 SUGO is configured via a YAML file (defaults to looking for `.sugo.yaml` in the repository root, which can be overridden using the `--config` CLI flag).
 
 ### LLM Setup
-Most agents leverage a LLM client to parse findings, suggest fixes, or review logic. Configure the LLM provider in `.sugo.yaml`:
+Most agents leverage a LLM client to parse findings, suggest fixes, or review logic. Configure the LLM provider and behavior in `.sugo.yaml`:
 
 ```yaml
 llm:
   provider: mimir                 # LLM provider (default: mimir)
   model: vllm/mimir               # Target model
   base_url: "https://mimir.dev"   # Provider API URL
+  temperature: 0.0                # Temperature override (default: 0.0 for greedy decoding)
+  seed: 42                        # Seed for deterministic responses (default: 42)
+  json_mode: true                 # Enforce JSON output format (default: true)
+  cache: true                     # Cache requests locally to save costs and speed up consecutive runs (default: true)
+  cache_dir: ".sugo/cache"        # Directory to store the request cache database (default: .sugo/cache)
 ```
 
 > [!IMPORTANT]
-> The API key is loaded from the environment variable `SUGO_LLM_API_KEY` for security and is never stored in the configuration file.
+> - The API key is loaded from the environment variable `SUGO_LLM_API_KEY` for security and is never stored in the configuration file.
+> - When `cache` is enabled, the cache database is saved in the configured `cache_dir` as `llm.json`. The CLI will automatically append `.sugo/` to the repository's `.gitignore` if the file exists and does not already include it, preventing cache data from being committed.
 
 ---
 

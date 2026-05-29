@@ -22,6 +22,33 @@ Respond ONLY with valid JSON in this exact structure (no markdown, no explanatio
 }
 ```
 
+## Few-Shot Example
+
+### Example Input
+
+Linter output:
+server.go:23:10: SA4006: this value of `err` is never used (staticcheck)
+
+### Example Output
+
+```json
+{
+  "findings": [
+    {
+      "agent": "lint",
+      "severity": "medium",
+      "location": {
+        "file": "server.go",
+        "line_start": 23,
+        "line_end": 23
+      },
+      "message": "The variable `err` is assigned a value, but it is never used subsequently, which might hide a skipped error check.",
+      "fix": "Remove the unused assignment or handle/check the `err` variable properly."
+    }
+  ]
+}
+```
+
 Rules:
 - severity: "high" for likely bugs or security issues, "medium" for code quality issues, "low" for style
 - fix: provide a specific code snippet or step to resolve the issue

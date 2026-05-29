@@ -3,8 +3,8 @@
 package rules
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -106,7 +106,8 @@ func (a *Agent) enrichWithLLM(ctx context.Context, findings []finding.Finding) (
 			{Role: "user", Content: userMsg},
 		},
 		MaxTokens:   2048,
-		Temperature: 0.2,
+		Temperature: llm.Float64(0.0),
+		JSONMode:    true,
 	})
 	if err != nil {
 		return nil, err
