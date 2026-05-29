@@ -21,6 +21,8 @@ type AgentsConfig struct {
 	Logic       AgentPromptConfig `yaml:"logic"`
 	Focus       AgentPromptConfig `yaml:"focus"`
 	AnalysisGap AgentPromptConfig `yaml:"analysisgap"`
+	Security    AgentPromptConfig `yaml:"security"`
+	Coverage    AgentPromptConfig `yaml:"coverage"`
 }
 
 // RulesConfig configures the rules agent.
@@ -60,13 +62,28 @@ type JiraConfig struct {
 	ProjectKey string `yaml:"project_key"`
 }
 
+// SecurityConfig configures the security agent.
+type SecurityConfig struct {
+	SecretPatterns []string `yaml:"secret_patterns"`
+	Command        string   `yaml:"command"`
+	Args           []string `yaml:"args"`
+}
+
+// CoverageConfig configures the coverage agent.
+type CoverageConfig struct {
+	Mappings     map[string]string `yaml:"mappings"`
+	ExcludePaths []string          `yaml:"exclude_paths"`
+}
+
 // Config is the top-level configuration structure.
 type Config struct {
-	Rules  RulesConfig  `yaml:"rules"`
-	Lint   LintConfig   `yaml:"lint"`
-	LLM    LLMConfig    `yaml:"llm"`
-	Jira   JiraConfig   `yaml:"jira"`
-	Agents AgentsConfig `yaml:"agents"`
+	Rules    RulesConfig    `yaml:"rules"`
+	Lint     LintConfig     `yaml:"lint"`
+	Security SecurityConfig `yaml:"security"`
+	Coverage CoverageConfig `yaml:"coverage"`
+	LLM      LLMConfig      `yaml:"llm"`
+	Jira     JiraConfig     `yaml:"jira"`
+	Agents   AgentsConfig   `yaml:"agents"`
 }
 
 // Load reads and parses a .sugo.yaml config file, applying defaults and validating.
@@ -135,6 +152,16 @@ func validate(cfg *Config) error {
 	for _, f := range cfg.Lint.SpecFiles {
 		if _, err := os.Stat(f.Path); err != nil {
 			return fmt.Errorf("lint spec_files %q: %w", f.Path, err)
+		}
+	}
+	for _, pattern := range cfg.Security.SecretPatterns {
+		if _, err := regexp.Compile(pattern); err != nil {
+			return fmt.Errorf("security secret_pattern %q: %w", pattern, err)
+		}
+	}
+	for pattern := range cfg.Coverage.Mappings {
+		if _, err := regexp.Compile(pattern); err != nil {
+			return fmt.Errorf("coverage mapping pattern %q: %w", pattern, err)
 		}
 	}
 	return nil

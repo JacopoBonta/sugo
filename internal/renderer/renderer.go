@@ -16,9 +16,11 @@ func Render(w io.Writer, report *orchestrator.Report, format string) error {
 		return renderJSON(w, report)
 	case "markdown", "md":
 		return renderMarkdown(w, report)
+	case "html", "h":
+		return renderHTML(w, report)
 	case "terminal", "":
 		return renderTerminal(w, report)
 	default:
-		return fmt.Errorf("unknown output format %q; use terminal, json, or markdown", format)
+		return fmt.Errorf("unknown output format %q; use terminal, json, markdown, or html", format)
 	}
 }

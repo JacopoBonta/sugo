@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUGO Review Report - PR #{{.PR.Number}}</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --container-bg: rgba(255, 255, 255, 0.7);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(226, 232, 240, 0.8);
+            --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --glass-blur: blur(12px);
+            
+            --high-color: #ef4444;
+            --high-bg: rgba(239, 68, 68, 0.1);
+            --med-color: #f59e0b;
+            --med-bg: rgba(245, 158, 11, 0.1);
+            --low-color: #3b82f6;
+            --low-bg: rgba(59, 130, 246, 0.1);
+            
+            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+            --btn-bg: #e2e8f0;
+            --btn-active: #6366f1;
+            --btn-active-text: #ffffff;
+            
+            --diff-add-bg: rgba(34, 197, 94, 0.1);
+            --diff-add-border: #22c55e;
+            --diff-del-bg: rgba(239, 68, 68, 0.1);
+            --diff-del-border: #ef4444;
+        }
+
+        body.dark {
+            --bg-color: #0b0f19;
+            --container-bg: rgba(15, 23, 42, 0.6);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(51, 65, 85, 0.5);
+            --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            --card-bg: rgba(15, 23, 42, 0.75);
+            
+            --high-bg: rgba(239, 68, 68, 0.2);
+            --med-bg: rgba(245, 158, 11, 0.2);
+            --low-bg: rgba(59, 130, 246, 0.2);
+            
+            --btn-bg: #1e293b;
+            --btn-active: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--container-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .pr-info h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pr-number {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .repo-name {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-branch {
+            background: var(--btn-bg);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Controls / Toggle */
+        .controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-lbl {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card.high .stat-val { color: var(--high-color); }
+        .stat-card.med .stat-val { color: var(--med-color); }
+        .stat-card.low .stat-val { color: var(--low-color); }
+
+        /* Filter Section */
+        .filter-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 80px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background: var(--btn-bg);
+            color: var(--text-main);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            opacity: 0.9;
+        }
+
+        .filter-btn.active {
+            background: var(--btn-active);
+            color: var(--btn-active-text);
+        }
+
+        .search-box {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--btn-active);
+        }
+
+        /* Findings List */
+        .findings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .finding-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .finding-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+        }
+
+        .finding-card.high::before { background: var(--high-color); }
+        .finding-card.medium::before { background: var(--med-color); }
+        .finding-card.low::before { background: var(--low-color); }
+
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .finding-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-agent {
+            background: var(--btn-bg);
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .badge-sev {
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-sev.high { background: var(--high-bg); color: var(--high-color); }
+        .badge-sev.medium { background: var(--med-bg); color: var(--med-color); }
+        .badge-sev.low { background: var(--low-bg); color: var(--low-color); }
+
+        .finding-location {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .finding-body {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        /* Code block for Fixes */
+        .finding-fix {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .fix-header {
+            background: var(--btn-bg);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fix-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.03);
+            white-space: pre-wrap;
+            overflow-x: auto;
+            color: var(--text-main);
+            border-top: 1px solid var(--border-color);
+        }
+
+        body.dark .fix-content {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .no-findings {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Agent Icons */
+        .agent-icon {
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="container">
+        <header>
+            <div class="pr-info">
+                <h1>
+                    <span class="pr-number">#{{.PR.Number}}</span>
+                    <span>{{.PR.Title}}</span>
+                </h1>
+                <div class="repo-name">
+                    <span>{{.PR.Owner}}/{{.PR.Repo}}</span>
+                    <span>•</span>
+                    <span class="badge-branch">{{.PR.HeadRef}}</span>
+                    <span>→</span>
+                    <span class="badge-branch">{{.PR.BaseRef}}</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="theme-toggle" id="themeBtn" title="Toggle Light/Dark Mode">
+                    <!-- Moon Icon -->
+                    <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-val" id="totalCount">0</div>
+                <div class="stat-lbl">Total Findings</div>
+            </div>
+            <div class="stat-card high">
+                <div class="stat-val" id="highCount">0</div>
+                <div class="stat-lbl">High Severity</div>
+            </div>
+            <div class="stat-card med">
+                <div class="stat-val" id="medCount">0</div>
+                <div class="stat-lbl">Medium Severity</div>
+            </div>
+            <div class="stat-card low">
+                <div class="stat-val" id="lowCount">0</div>
+                <div class="stat-lbl">Low Severity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" style="font-size: 1.5rem; line-height: 2.2rem;">{{.Duration.Round 1000000}}</div>
+                <div class="stat-lbl">Duration</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-label">Agent</div>
+                <div class="btn-group" id="agentFilters">
+                    <button class="filter-btn active" data-agent="all">All</button>
+                    <!-- JavaScript will dynamically fill remaining agents -->
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-label">Severity</div>
+                <div class="btn-group" id="severityFilters">
+                    <button class="filter-btn active" data-severity="all">All</button>
+                    <button class="filter-btn" data-severity="high">High</button>
+                    <button class="filter-btn" data-severity="medium">Medium</button>
+                    <button class="filter-btn" data-severity="low">Low</button>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-label">Search</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Filter by message or file name...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Findings -->
+        <div class="findings-list" id="findingsContainer">
+            {{range .Findings}}
+            <div class="finding-card {{.Severity}}" data-agent="{{.Agent}}" data-severity="{{.Severity}}">
+                <div class="finding-header">
+                    <div class="finding-meta">
+                        <span class="badge-agent">
+                            <span class="agent-icon" data-agent-icon="{{.Agent}}">🤖</span>
+                            {{.Agent}}
+                        </span>
+                        <span class="badge-sev {{.Severity}}">{{.Severity}}</span>
+                        {{if .Location.File}}
+                        <span class="finding-location">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                            {{.Location.File}}{{if .Location.LineStart}}:{{.Location.LineStart}}{{if ne .Location.LineStart .Location.LineEnd}}-{{.Location.LineEnd}}{{end}}{{end}}
+                        </span>
+                        {{end}}
+                    </div>
+                </div>
+                <div class="finding-body">
+                    {{.Message}}
+                </div>
+                {{if .Fix}}
+                <div class="finding-fix">
+                    <div class="fix-header">
+                        <span>Suggested Fix</span>
+                        <span style="font-size: 0.75rem; text-transform: uppercase;">{{$.PR.Repo}} Patch</span>
+                    </div>
+                    <pre class="fix-content"><code>{{.Fix}}</code></pre>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <div class="no-findings">
+                <h3>No findings detected. Nice job!</h3>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <script>
+        // Setup Agent Icons
+        const agentIcons = {
+            'rules': '📏',
+            'lint': '⚙️',
+            'logic': '🧠',
+            'focus': '👁️',
+            'analysisgap': '🔍',
+            'security': '🛡️',
+            'coverage': '🧪'
+        };
+        document.querySelectorAll('.agent-icon').forEach(icon => {
+            const agent = icon.getAttribute('data-agent-icon');
+            if (agentIcons[agent]) {
+                icon.textContent = agentIcons[agent];
+            }
+        });
+
+        // Theme Toggle
+        const themeBtn = document.getElementById('themeBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            if (isDark) {
+                themeIcon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>';
+            } else {
+                themeIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>';
+            }
+        });
+
+        // Extract list of unique agents in the findings
+        const cards = Array.from(document.querySelectorAll('.finding-card'));
+        const agents = new Set();
+        cards.forEach(card => {
+            const ag = card.getAttribute('data-agent');
+            if (ag) agents.add(ag);
+        });
+
+        // Render agent filters
+        const agentFiltersContainer = document.getElementById('agentFilters');
+        agents.forEach(agent => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.setAttribute('data-agent', agent);
+            const icon = agentIcons[agent] || '🤖';
+            btn.textContent = `${icon} ${agent.charAt(0).toUpperCase() + agent.slice(1)}`;
+            agentFiltersContainer.appendChild(btn);
+        });
+
+        // Filter Logic
+        let activeAgent = 'all';
+        let activeSeverity = 'all';
+        let searchQuery = '';
+
+        function updateStats(visibleCards) {
+            let high = 0, med = 0, low = 0;
+            visibleCards.forEach(c => {
+                const sev = c.getAttribute('data-severity');
+                if (sev === 'high') high++;
+                else if (sev === 'medium') med++;
+                else if (sev === 'low') low++;
+            });
+            document.getElementById('totalCount').textContent = visibleCards.length;
+            document.getElementById('highCount').textContent = high;
+            document.getElementById('medCount').textContent = med;
+            document.getElementById('lowCount').textContent = low;
+        }
+
+        function filterFindings() {
+            let visible = [];
+            cards.forEach(card => {
+                const agent = card.getAttribute('data-agent');
+                const severity = card.getAttribute('data-severity');
+                const text = card.textContent.toLowerCase();
+                
+                const agentMatch = activeAgent === 'all' || agent === activeAgent;
+                const severityMatch = activeSeverity === 'all' || severity === activeSeverity;
+                const searchMatch = searchQuery === '' || text.includes(searchQuery);
+
+                if (agentMatch && severityMatch && searchMatch) {
+                    card.style.display = 'flex';
+                    visible.push(card);
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show 'no findings' if visible list is empty
+            const noFindings = document.querySelector('.no-findings');
+            if (noFindings) {
+                if (visible.length === 0 && cards.length > 0) {
+                    noFindings.style.display = 'block';
+                    noFindings.querySelector('h3').textContent = 'No matching findings found.';
+                } else if (cards.length > 0) {
+                    noFindings.style.display = 'none';
+                }
+            }
+
+            updateStats(visible);
+        }
+
+        // Event Listeners for Filters
+        document.querySelectorAll('#agentFilters, #severityFilters').forEach(container => {
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('.filter-btn');
+                if (!btn) return;
+
+                // Set active class
+                container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update states
+                const ag = btn.getAttribute('data-agent');
+                const sev = btn.getAttribute('data-severity');
+                if (ag) activeAgent = ag;
+                if (sev) activeSeverity = sev;
+
+                filterFindings();
+            });
+        });
+
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            filterFindings();
+        });
+
+        // Run initial filters and stats
+        filterFindings();
+    </script>
+</body>
+</html>
