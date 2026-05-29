@@ -2,6 +2,8 @@
 
 Go CLI (Cobra) that helps human reviewers prepare for GitHub PR reviews. It fetches a PR, runs independent analysis agents in parallel, and produces a structured report of findings. It is **not** an automated reviewer — it does not post comments on PRs.
 
+For detailed information on configuring and customizing SUGO and its agents, see the [User Guide & Customization Manual](USER_GUIDE.md).
+
 ## Build & Run
 
 ```bash
